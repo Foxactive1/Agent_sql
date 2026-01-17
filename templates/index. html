@@ -1,1 +1,1140 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🤖 Agente de Banco de Dados - E-commerce</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Variáveis CSS para temas */
+        :root {
+            --primary: #667eea;
+            --secondary: #764ba2;
+            --bg-color: #f5f7fa;
+            --text-color: #333333;
+            --card-bg: #ffffff;
+            --border-color: #e1e5e9;
+            --shadow: 0 10px 30px rgba(0,0,0,0.1);
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --info: #3b82f6;
+        }
 
+        [data-theme="dark"] {
+            --bg-color: #1a202c;
+            --text-color: #e2e8f0;
+            --card-bg: #2d3748;
+            --border-color: #4a5568;
+            --primary: #7f9cf5;
+            --secondary: #9f7aea;
+            --shadow: 0 10px 30px rgba(0,0,0,0.3);
+            --success: #34d399;
+            --warning: #fbbf24;
+            --danger: #f87171;
+            --info: #60a5fa;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--bg-color);
+            color: var(--text-color);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        /* Header melhorado */
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            position: relative;
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .icon-btn {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            color: var(--text-color);
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            transition: all 0.3s;
+        }
+
+        .icon-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow);
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--card-bg);
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            border: 1px solid var(--border-color);
+        }
+
+        /* Dashboard rápido */
+        .quick-dashboard {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+
+        .dashboard-card {
+            background: var(--card-bg);
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border-color);
+            transition: transform 0.3s;
+        }
+
+        .dashboard-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .card-value {
+            font-size: 2rem;
+            font-weight: bold;
+            margin: 10px 0;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .card-label {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
+        /* Steps indicator */
+        .steps-indicator {
+            display: flex;
+            justify-content: space-between;
+            margin: 30px 0;
+            position: relative;
+        }
+
+        .steps-indicator::before {
+            content: '';
+            position: absolute;
+            top: 20px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: var(--border-color);
+            z-index: 1;
+        }
+
+        .step {
+            position: relative;
+            z-index: 2;
+            background: var(--card-bg);
+            padding: 10px 20px;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            font-size: 0.9rem;
+            opacity: 0.6;
+            transition: all 0.3s;
+        }
+
+        .step.active {
+            opacity: 1;
+            background: var(--primary);
+            color: white;
+            transform: scale(1.05);
+        }
+
+        .step i {
+            margin-right: 5px;
+        }
+
+        /* Main content layout */
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1.5fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        @media (max-width: 1024px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .input-section, .output-section {
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border-color);
+        }
+
+        .section-title {
+            color: var(--text-color);
+            margin-bottom: 20px;
+            font-size: 1.4rem;
+            border-bottom: 2px solid var(--primary);
+            padding-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .section-title i {
+            color: var(--primary);
+        }
+
+        /* Question input melhorado */
+        .question-input-container {
+            position: relative;
+            margin-bottom: 20px;
+        }
+
+        .question-input {
+            width: 100%;
+            height: 150px;
+            padding: 20px;
+            border: 2px solid var(--border-color);
+            border-radius: 15px;
+            font-size: 1.1rem;
+            resize: vertical;
+            transition: border-color 0.3s;
+            background: var(--card-bg);
+            color: var(--text-color);
+            font-family: inherit;
+        }
+
+        .question-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .input-hint {
+            position: absolute;
+            bottom: -25px;
+            left: 0;
+            font-size: 0.85rem;
+            opacity: 0.7;
+            color: var(--text-color);
+        }
+
+        /* Preview SQL */
+        .preview-card {
+            background: var(--bg-color);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 20px;
+            font-size: 0.9rem;
+        }
+
+        .preview-card small {
+            font-weight: bold;
+            color: var(--primary);
+        }
+
+        #previewSQL {
+            display: block;
+            margin-top: 5px;
+            font-family: 'Courier New', monospace;
+            color: var(--text-color);
+            opacity: 0.8;
+        }
+
+        /* Examples section */
+        .examples {
+            margin: 25px 0;
+        }
+
+        .examples h3 {
+            color: var(--text-color);
+            margin-bottom: 15px;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .example-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .example-btn {
+            background: var(--bg-color);
+            border: 1px solid var(--border-color);
+            color: var(--text-color);
+            padding: 10px 15px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .example-btn:hover {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+            transform: translateY(-2px);
+        }
+
+        .example-btn i {
+            font-size: 0.8rem;
+        }
+
+        /* Favoritos */
+        .favorites-container {
+            margin-top: 20px;
+        }
+
+        .favorite-btn {
+            background: transparent;
+            border: none;
+            color: var(--warning);
+            cursor: pointer;
+            font-size: 1.2rem;
+            transition: transform 0.3s;
+        }
+
+        .favorite-btn:hover {
+            transform: scale(1.2);
+        }
+
+        .favorite-btn.active {
+            color: #fbbf24;
+        }
+
+        /* Submit button */
+        .submit-btn {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            border: none;
+            padding: 18px 30px;
+            border-radius: 15px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            margin-top: 20px;
+            width: 100%;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            font-weight: 600;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .submit-btn:active {
+            transform: translateY(0);
+        }
+
+        .submit-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Loading */
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 30px;
+        }
+
+        .spinner {
+            border: 4px solid var(--border-color);
+            border-top: 4px solid var(--primary);
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* View toggle */
+        .view-toggle {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .view-btn {
+            background: var(--bg-color);
+            border: 1px solid var(--border-color);
+            color: var(--text-color);
+            padding: 10px 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .view-btn:hover {
+            background: var(--primary);
+            color: white;
+        }
+
+        .view-btn.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        /* Result containers */
+        .result-container {
+            display: none;
+        }
+
+        .success-message {
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid var(--success);
+            border-radius: 15px;
+            padding: 20px;
+            color: var(--success);
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .metadata {
+            background: var(--bg-color);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 25px;
+            border: 1px solid var(--border-color);
+        }
+
+        .metadata h4 {
+            color: var(--text-color);
+            margin-bottom: 15px;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .metadata-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .metadata-item {
+            background: var(--card-bg);
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px solid var(--border-color);
+        }
+
+        .metadata-label {
+            font-weight: bold;
+            color: var(--primary);
+            font-size: 0.9rem;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        /* SQL styling */
+        .sql-container {
+            background: var(--bg-color);
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 10px;
+            border: 1px solid var(--border-color);
+            position: relative;
+        }
+
+        .copy-sql {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.8rem;
+        }
+
+        /* Data views */
+        .view-content {
+            display: none;
+        }
+
+        .view-content.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        /* Table view */
+        .table-container {
+            overflow-x: auto;
+            border-radius: 15px;
+            border: 1px solid var(--border-color);
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .data-table th {
+            background: var(--primary);
+            color: white;
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+            position: sticky;
+            top: 0;
+        }
+
+        .data-table td {
+            padding: 12px 15px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .data-table tr:hover {
+            background: var(--bg-color);
+        }
+
+        /* Cards view */
+        .cards-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .data-card {
+            background: var(--card-bg);
+            border-radius: 15px;
+            padding: 20px;
+            border: 1px solid var(--border-color);
+            transition: transform 0.3s;
+        }
+
+        .data-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow);
+        }
+
+        .card-field {
+            margin-bottom: 10px;
+        }
+
+        .card-label {
+            font-weight: bold;
+            color: var(--primary);
+            font-size: 0.9rem;
+        }
+
+        /* JSON view */
+        .json-view {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 20px;
+            border-radius: 15px;
+            font-family: 'Courier New', monospace;
+            overflow-x: auto;
+            white-space: pre-wrap;
+            font-size: 0.9rem;
+        }
+
+        /* Chart container */
+        .chart-container {
+            background: var(--card-bg);
+            border-radius: 15px;
+            padding: 20px;
+            border: 1px solid var(--border-color);
+            height: 400px;
+            position: relative;
+        }
+
+        /* Filters panel */
+        .filters-panel {
+            background: var(--card-bg);
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px 0;
+            border: 1px solid var(--border-color);
+        }
+
+        .filter-group {
+            margin-bottom: 15px;
+        }
+
+        .filter-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: var(--primary);
+        }
+
+        .filter-group input, .filter-group select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            background: var(--bg-color);
+            color: var(--text-color);
+        }
+
+        /* Error container */
+        .error-container {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid var(--danger);
+            border-radius: 15px;
+            padding: 25px;
+            color: var(--danger);
+            margin: 20px 0;
+        }
+
+        /* Notification toast */
+        .notification-toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            animation: slideInRight 0.3s ease;
+        }
+
+        @keyframes slideInRight {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        /* Responsive design */
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .header-actions {
+                justify-content: center;
+            }
+            
+            .main-content {
+                padding: 15px;
+            }
+            
+            .input-section, .output-section {
+                padding: 20px;
+            }
+            
+            .quick-dashboard {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Accessibility */
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
+        }
+
+        /* Dica do dia */
+        .daily-tip {
+            background: rgba(59, 130, 246, 0.1);
+            border: 1px solid var(--info);
+            border-radius: 10px;
+            padding: 15px;
+            margin: 20px 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .daily-tip i {
+            color: var(--info);
+            font-size: 1.2rem;
+        }
+
+        /* Progress bar */
+        .progress-container {
+            background: var(--bg-color);
+            border-radius: 10px;
+            padding: 15px;
+            margin: 20px 0;
+            border: 1px solid var(--border-color);
+        }
+
+        .progress-bar {
+            height: 8px;
+            background: var(--border-color);
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            width: 0%;
+            transition: width 0.3s;
+            border-radius: 4px;
+        }
+        /* Adicionar ao CSS existente em index.html */
+
+.sql-keyword {
+    color: #569cd6;
+    font-weight: bold;
+}
+
+.sql-function {
+    color: #dcdcaa;
+}
+
+.sql-string {
+    color: #ce9178;
+}
+
+.json-key {
+    color: #9cdcfe;
+}
+
+.json-string {
+    color: #ce9178;
+}
+
+.json-number {
+    color: #b5cea8;
+}
+
+.json-boolean {
+    color: #569cd6;
+}
+
+.json-null {
+    color: #569cd6;
+}
+
+.history-item {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    padding: 15px;
+    margin-bottom: 10px;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.history-item:hover {
+    transform: translateX(5px);
+    border-color: var(--primary);
+}
+
+.history-question {
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.history-meta {
+    font-size: 0.85rem;
+    opacity: 0.7;
+}
+
+.no-data {
+    text-align: center;
+    padding: 40px;
+    opacity: 0.7;
+    font-style: italic;
+}
+
+/* Responsividade adicional */
+@media (max-width: 768px) {
+    .main-content {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+    
+    .input-section, .output-section {
+        padding: 20px;
+    }
+    
+    .table-container {
+        font-size: 0.9rem;
+    }
+    
+    .data-table th,
+    .data-table td {
+        padding: 8px 10px;
+    }
+}
+
+/* Animações */
+@keyframes pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.7; }
+    100% { opacity: 1; }
+}
+
+.loading {
+    animation: pulse 1.5s infinite;
+}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header com ações -->
+        <div class="header">
+            <div class="header-content">
+                <div class="header-text">
+                    <h1><i class="fas fa-robot"></i> Agente de Banco de Dados</h1>
+                    <p>Converse com seu banco de dados em linguagem natural</p>
+                </div>
+                <div class="header-actions">
+                    <button class="icon-btn" id="themeToggle" title="Alternar tema">
+                        <i class="fas fa-moon"></i>
+                    </button>
+                    <button class="icon-btn" id="fullscreenBtn" title="Tela cheia">
+                        <i class="fas fa-expand"></i>
+                    </button>
+                    <button class="icon-btn" id="helpBtn" title="Ajuda">
+                        <i class="fas fa-question"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Status badge será adicionado via JavaScript -->
+            <div id="statusBadge"></div>
+        </div>
+
+        <!-- Dashboard rápido -->
+        <div class="quick-dashboard">
+            <div class="dashboard-card">
+                <div class="card-label"><i class="fas fa-shopping-cart"></i> Vendas Hoje</div>
+                <div class="card-value" id="todaySales">R$ 0,00</div>
+            </div>
+            <div class="dashboard-card">
+                <div class="card-label"><i class="fas fa-users"></i> Novos Clientes</div>
+                <div class="card-value" id="newCustomers">0</div>
+            </div>
+            <div class="dashboard-card">
+                <div class="card-label"><i class="fas fa-box"></i> Estoque Baixo</div>
+                <div class="card-value" id="lowStock">0</div>
+            </div>
+            <div class="dashboard-card">
+                <div class="card-label"><i class="fas fa-chart-line"></i> Ticket Médio</div>
+                <div class="card-value" id="avgTicket">R$ 0,00</div>
+            </div>
+        </div>
+
+        <!-- Dica do dia -->
+        <div class="daily-tip" id="dailyTip">
+            <i class="fas fa-lightbulb"></i>
+            <div class="tip-content">
+                <strong>Dica do dia:</strong>
+                <span id="tipText">Use "últimos 7 dias" para ver dados recentes</span>
+            </div>
+            <button class="icon-btn" id="nextTip" style="margin-left: auto;">
+                <i class="fas fa-chevron-right"></i>
+            </button>
+        </div>
+
+        <!-- Steps indicator -->
+        <div class="steps-indicator">
+            <div class="step active"><i class="fas fa-keyboard"></i> Pergunta</div>
+            <div class="step"><i class="fas fa-cogs"></i> Processamento</div>
+            <div class="step"><i class="fas fa-chart-bar"></i> Resultados</div>
+        </div>
+
+        <div class="main-content">
+            <!-- Seção de entrada -->
+            <div class="input-section">
+                <h2 class="section-title"><i class="fas fa-question-circle"></i> Faça sua pergunta</h2>
+                
+                <div class="question-input-container">
+                    <textarea 
+                        id="questionInput" 
+                        class="question-input" 
+                        placeholder="Digite sua pergunta em português...&#10;Exemplo: 'Total de vendas hoje' ou 'Produtos com estoque baixo'"
+                        aria-label="Campo para fazer perguntas em linguagem natural"
+                    ></textarea>
+                    <div class="input-hint">Pressione Ctrl+Enter para executar • Esc para limpar</div>
+                </div>
+
+                <!-- Preview SQL -->
+                <div class="preview-card" id="sqlPreview" style="display: none;">
+                    <small><i class="fas fa-code"></i> SQL Preview:</small>
+                    <code id="previewSQL">-- Digite uma pergunta...</code>
+                </div>
+
+                <!-- Favoritos -->
+                <div class="favorites-container" id="favoritesContainer" style="display: none;">
+                    <h3><i class="fas fa-star"></i> Favoritos</h3>
+                    <div id="favoritesList" class="example-buttons"></div>
+                </div>
+
+                <!-- Exemplos -->
+                <div class="examples">
+                    <h3><i class="fas fa-lightbulb"></i> Exemplos para testar:</h3>
+                    <div class="example-buttons" id="exampleButtons">
+                        <!-- Botões serão adicionados via JavaScript -->
+                    </div>
+                    
+                    <div style="margin-top: 15px;">
+                        <button class="example-btn" onclick="app.showMoreExamples()">
+                            <i class="fas fa-plus"></i> Mais exemplos
+                        </button>
+                        <button class="example-btn" onclick="app.showHistory()">
+                            <i class="fas fa-history"></i> Histórico
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Filtros avançados -->
+                <div class="filters-panel" id="filtersPanel" style="display: none;">
+                    <h4><i class="fas fa-filter"></i> Filtros Avançados</h4>
+                    <div class="filter-group">
+                        <label>Data Início:</label>
+                        <input type="date" id="filterDateStart">
+                    </div>
+                    <div class="filter-group">
+                        <label>Data Fim:</label>
+                        <input type="date" id="filterDateEnd">
+                    </div>
+                    <button class="example-btn" onclick="app.applyFilters()" style="width: 100%; margin-top: 10px;">
+                        <i class="fas fa-check"></i> Aplicar Filtros
+                    </button>
+                </div>
+
+                <!-- Botão submit -->
+                <button id="submitBtn" class="submit-btn" onclick="app.submitQuestion()">
+                    <i class="fas fa-play"></i> Executar Consulta
+                </button>
+
+                <!-- Progress bar -->
+                <div class="progress-container" id="queryProgress" style="display: none;">
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressFill"></div>
+                    </div>
+                    <div class="progress-text" id="progressText">Processando...</div>
+                </div>
+
+                <!-- Loading -->
+                <div id="loading" class="loading">
+                    <div class="spinner"></div>
+                    <p>Processando sua pergunta...</p>
+                </div>
+            </div>
+
+            <!-- Seção de saída -->
+            <div class="output-section">
+                <div class="output-header">
+                    <h2 class="section-title"><i class="fas fa-chart-bar"></i> Resultados</h2>
+                    
+                    <!-- View toggle -->
+                    <div class="view-toggle" id="viewToggle" style="display: none;">
+                        <button class="view-btn active" data-view="table">
+                            <i class="fas fa-table"></i> Tabela
+                        </button>
+                        <button class="view-btn" data-view="cards">
+                            <i class="fas fa-th-large"></i> Cards
+                        </button>
+                        <button class="view-btn" data-view="json">
+                            <i class="fas fa-code"></i> JSON
+                        </button>
+                        <button class="view-btn" data-view="chart">
+                            <i class="fas fa-chart-pie"></i> Gráfico
+                        </button>
+                    </div>
+                </div>
+
+                <div id="resultContainer" class="result-container">
+                    <!-- Mensagem de sucesso -->
+                    <div id="successMessage" class="success-message" style="display: none;">
+                        <i class="fas fa-check-circle"></i>
+                        <div>
+                            <strong>Consulta executada com sucesso!</strong>
+                            <div id="resultStats" style="font-size: 0.9rem; margin-top: 5px;"></div>
+                        </div>
+                    </div>
+
+                    <!-- Metadados -->
+                    <div id="metadata" class="metadata" style="display: none;">
+                        <h4><i class="fas fa-info-circle"></i> Metadados da Consulta</h4>
+                        <div class="metadata-grid">
+                            <div class="metadata-item">
+                                <span class="metadata-label">Pergunta original:</span>
+                                <div id="originalQuestion">-</div>
+                            </div>
+                            <div class="metadata-item">
+                                <span class="metadata-label">Tipo de consulta:</span>
+                                <div id="queryType">-</div>
+                            </div>
+                            <div class="metadata-item">
+                                <span class="metadata-label">Explicação:</span>
+                                <div id="explanation">-</div>
+                            </div>
+                            <div class="metadata-item">
+                                <span class="metadata-label">SQL Gerado:</span>
+                                <div class="sql-container">
+                                    <button class="copy-sql" onclick="app.copySQL()">
+                                        <i class="fas fa-copy"></i> Copiar
+                                    </button>
+                                    <pre id="sqlQuery" style="margin: 0; font-family: 'Courier New', monospace; white-space: pre-wrap;"></pre>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- View containers -->
+                    <div class="view-content active" data-view="table" id="tableView"></div>
+                    <div class="view-content" data-view="cards" id="cardsView"></div>
+                    <div class="view-content" data-view="json" id="jsonView"></div>
+                    <div class="view-content" data-view="chart" id="chartView"></div>
+
+                    <!-- Ações -->
+                    <div id="resultActions" style="display: none; margin-top: 20px;">
+                        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                            <button class="example-btn" onclick="app.downloadAsCSV()">
+                                <i class="fas fa-file-csv"></i> Exportar CSV
+                            </button>
+                            <button class="example-btn" onclick="app.copyResultsToClipboard()">
+                                <i class="fas fa-copy"></i> Copiar Resultados
+                            </button>
+                            <button class="example-btn" onclick="app.toggleFavoriteQuery()">
+                                <i class="far fa-star"></i> Favoritar
+                            </button>
+                            <button class="example-btn" onclick="app.showFilters()">
+                                <i class="fas fa-filter"></i> Filtrar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Container de erro -->
+                <div id="errorContainer" class="error-container" style="display: none;">
+                    <!-- Mensagens de erro serão inseridas aqui -->
+                </div>
+
+                <!-- Histórico (será mostrado dinamicamente) -->
+                <div id="historyContainer" style="display: none;"></div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div style="text-align: center; margin-top: 40px; padding: 20px; opacity: 0.7; font-size: 0.9rem;">
+            <p>🤖 Agente de Banco de Dados - E-commerce • 
+                <span id="currentYear"></span> • 
+                <button onclick="app.startTour()" style="background: none; border: none; color: inherit; cursor: pointer;">
+                    <i class="fas fa-graduation-cap"></i> Iniciar Tour
+                </button>
+            </p>
+        </div>
+    </div>
+
+    <!-- Incluir Chart.js para gráficos -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- Nosso JavaScript principal -->
+    <script src="./static/app.js"></script>
+    
+    <script>
+        // Scripts inline para inicialização rápida
+        document.getElementById('currentYear').textContent = new Date().getFullYear();
+        
+        // Inicializar tema
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        document.documentElement.setAttribute('data-theme', savedTheme);
+        
+        // Atualizar ícone do tema
+        const themeIcon = document.querySelector('#themeToggle i');
+        themeIcon.className = savedTheme === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
+    </script>
+</body>
+</html>
